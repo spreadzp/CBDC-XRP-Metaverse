@@ -2,11 +2,11 @@
 import { AccountSetAsfFlags, AccountSetTfFlags, Client, Transaction, TxResponse, Wallet, multisign, SubmitMultisignedRequest, decode } from 'xrpl'
 
 
-
+const currency_code = "CBDC"
 const connectToXrpClient = async () => {
     try {
         const net =  "wss://xls20-sandbox.rippletest.net:51233"; // "wss://s.devnet.rippletest.net:51233"; // "wss://s.altnet.rippletest.net:51233"; // "wss://xls20-sandbox.rippletest.net:51233"
-        console.log('window.xrpl :>> ', window);
+
         const client = new Client(net, { timeout: 50000 });
         await client.connect();
         return client;
@@ -59,7 +59,7 @@ export async function sendTokens(senderName: string, receiverAddress: string, am
     const client = await connectToXrpClient();
     const bankDataLs = localStorage.getItem(`${senderName}`) || "";
     const wallet = Wallet.fromSeed(JSON.parse(bankDataLs).seed);
-    const currency_code = "FOO"
+   
     if (client && receiverAddress) {
         const issue_quantity = `${amount}`;
         const send_token_tx: Transaction = {
@@ -97,8 +97,7 @@ export async function sendTokensFarther(senderSeed: string, cbdcAddress: string,
         const issuerAddress = JSON.parse(bankDataLs || "").classicAddress;
         const admin = localStorage.getItem("Admin");
         const aWallet = JSON.parse(admin || "");
-        const wallet = Wallet.fromSeed(senderSeed);
-        const currency_code = "FOO"
+        const wallet = Wallet.fromSeed(senderSeed); 
         if (client && receiverAddress) {
             const issue_quantity = `${amount}`;
             const send_token_tx: Transaction = {
@@ -211,8 +210,7 @@ export async function createTrustLine(walletName: string) {
     if (client && msDataLs) {
         try{
 
-            const wallet = Wallet.fromSeed(JSON.parse(msDataLs).seed);
-            const currency_code = "FOO"
+            const wallet = Wallet.fromSeed(JSON.parse(msDataLs).seed); 
             const trust_set_tx: Transaction = {
                 "TransactionType": "TrustSet",
                 "Account": wallet.address,

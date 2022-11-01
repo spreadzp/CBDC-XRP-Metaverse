@@ -12,15 +12,12 @@ function ChatForm({ members }) {
     const [connectedPeerId, setConnectedPeerId] = useState('');
     const [myPeerId, setMyPeerId] = useState(null);
     const { state } = useP2p();
-    console.log("🚀 ~ file: ChatForm.jsx ~ line 15 ~ ChatForm ~ state", state)
     const messageContainer = [];
     const [message, setMessage] = useState(messageContainer)
     const connectPeer = (peerId) => {
-        console.log("🚀 ~ file: ChatForm.jsx ~ line 16 ~ connectPeer ~ peerId", peerId)
         setConnectedPeerId(peerId);
     }
    
-
 
 
     return (
@@ -34,7 +31,7 @@ function ChatForm({ members }) {
                                 className="d-flex justify-content-between align-items-start"
                             >
                                 <div className="ms-2 me-auto">
-                                    <div className="fw-bold">{item.name}</div>
+                                    <div className="fw-bold">{item.peerId}</div>
                                     {item.role}
                                 </div>
                                 <Badge bg="primary" pill>
@@ -46,6 +43,7 @@ function ChatForm({ members }) {
                 </ListGroup>
                 <div>
                     <User connectedPeerId={state.peerId} />
+                 
                     {/* <P2p myPeer={setMyPeerId} /> */}
                     <ChatWindow peerToConnect={connectedPeerId} />
                 </div>

@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import useP2p from '../contexts/p2p/useP2p';
+import { multiaddr } from '@multiformats/multiaddr'
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import { array2str, str2array } from '../contexts/utils'; 
+import { array2str, str2array } from '../contexts/utils';
 import PeerId from "peer-id";
 import { peerIdFromString } from '@libp2p/peer-id'
 import { pushable } from "it-pushable";
 import { pipe } from "it-pipe";
 import { State } from '../contexts/p2p/state';
+import { stdinToStream, streamToConsole } from '../contexts/p2p/stream';
 const chatProtocol = "/chat/1.0.0";
 type ChatWindowProps = {
     peerToConnect: string
@@ -15,14 +17,17 @@ type ChatWindowProps = {
 
 function ChatWindow({ peerToConnect }: ChatWindowProps) {
     const { state } = useP2p();
+    const walletAccount = localStorage.getItem("wallet") || "";
+    const [xrpAccount, setAccount] = useState(walletAccount.length > 0 ? JSON.parse(walletAccount): null); 
     const refChat = useRef<HTMLTextAreaElement>(null);
     const refCurrentPeerId = useRef<HTMLInputElement>({} as HTMLInputElement);
-    const refMessage = useRef<HTMLInputElement>(null);
+    const refCbdc = useRef<HTMLInputElement>(null);
     let chatQueue: any = null;
     const chatProposals = [];
     const messageContainer: any[] = [];
     const [distPeer, setDistPeer] = useState(peerToConnect)
     const [message, setMessage] = useState(messageContainer)
+    const [reqAmount, setReqAmount] = useState(0)
     const handleChange = (event: any) => {
         console.log("🚀 ~ file: ChatForm.jsx ~ line 23 ~ handleChange ~ event", event)
         // setMessage(event.target.value);: any[]
@@ -40,26 +45,15 @@ function ChatWindow({ peerToConnect }: ChatWindowProps) {
         // refCurrentPeerId?.current?.setRangeText(peerToConnect);  
         setDistPeer(peerToConnect);
         console.log('state.peerId :>> ', state.peerId);
-        if (peerToConnect !== state.peerId) {
-            const tryToFindPeers = async () => {
-                try{
-                    // let peerId = PeerId.parse(peerToConnect);
-                    // let result = await state.libp2p.peerRouting.findPeer(peerId);
-                    // console.log("🚀 ~ file: ChatWindow.tsx ~ line 48 ~ tryToFindPeers ~ result", result)
-                    // console.log("🚀 ~ file: ChatWindow.tsx ~ line 65 ~ findOtherPeer ~ result", result)
-                    // const otherPeerMultiaddrs = result.multiaddrs;
-                    // const otherPeerProtocols = state.libp2p.peerStore.protoBook.get(peerId);
-                    // console.log("🚀 ~ file: ChatWindow.tsx ~ line 67 ~ findOtherPeer ~ otherPeerProtocols", otherPeerProtocols)
-                    // const otherPeerMultiaddr = otherPeerMultiaddrs[0];
-                    // console.log("🚀 ~ file: ChatWindow.tsx ~ line 68 ~ findOtherPeer ~ otherPeerMultiaddr", otherPeerMultiaddr)
-                    // const otherPeerProtocol = chatProtocol;
-                } catch(err) {
-                    console.log("🚀 ~ file: ChatWindow.tsx ~ line 55 ~ tryToFindPeers ~ err", err)
-                    
-                }
-            }
-            tryToFindPeers()
-        }
+        // if (peerToConnect !== state.peerId) {
+        //     const tryToFindPeers = async () => {
+        //         try { 
+        //         } catch (err) {
+        //             console.log("🚀 ~ file: ChatWindow.tsx ~ line 55 ~ tryToFindPeers ~ err", err) 
+        //         }
+        //     }
+        //     tryToFindPeers()
+        // }
 
     }, [peerToConnect]);
     useEffect(() => {
@@ -81,160 +75,70 @@ function ChatWindow({ peerToConnect }: ChatWindowProps) {
         }
     };
 
-
-
+ 
     const connectToPeer = async (peer: string) => {
         let pushArr = null;
         try {
-            // let peerId =  PeerId.createFromB58String(peer);
-
-            // try {
-            //     const { stream } = await state.libp2p.dialProtocol(peerId, [
-            //         "/browser/json"
-            //     ]);
-            //     pipe([JSON.stringify({ hair: "blue" })], stream);
-            // } catch (err) {
-            //     console.log(err);
-            // }
-            // state.libp2p.dialProtocol(peerId, chatProtocol)
-            // .then((stream: any) => {
-            //     pushArr = pushable();
-            //     pipe(
-            //         chatQueue,
-            //         (source: any) => {
-            //             return (async function* () {
-            //                 for await (const msg of source) yield str2array(msg);
-            //             })();
-            //         },
-            //         stream
-            //     );
-            // })
-            // .catch((err: any) => {
-            //     console.log('err1 :>> ', err);
-            // })
-            debugger
-           try {
-            let peerId = PeerId.parse(peerToConnect);
-                    let result = await state.libp2p.peerRouting.findPeer(peerId); 
-                    const otherPeerMultiaddrs = result.multiaddrs;
-                    const otherPeerProtocols = state.libp2p.peerStore.protoBook.get(peerId); 
-                    const otherPeerMultiaddr = otherPeerMultiaddrs[0]; 
-                    console.log("🚀 ~ file: ChatWindow.tsx ~ line 122 ~ connectToPeer ~ otherPeerMultiaddr", otherPeerMultiaddr)
-                    const otherPeerProtocol = chatProtocol;
-            //let peerId = PeerId.parse(peerToConnect);
-            const { stream, protocol } = await state.libp2p.dialProtocol(peerId, otherPeerProtocol);
-
-            // chatQueue = pushable();
-               pipe([JSON.stringify({ hair: "blue" })], stream);
-            } catch (err) {
-                console.log(err);
-            }
-            // pipe(
-            //     chatQueue,
-            //     (source) => {
-            //         return (async function* () {
-            //             for await (const msg of source) {
-            //                 console.log("🚀 ~ file: ChatWindow.tsx ~ line 124 ~ forawait ~ msg", msg)
-            //                 yield str2array(msg);}
-            //         })();
-            //     },
-            //     stream
-            // );
-
-            // await state.libp2p.handle(chatProtocol, ({ connection, stream, protocol}: any) => {
-            //     const remotePeerId = connection.remoteAddr.getPeerId();
-            //     console.log("🚀 ~ file: ChatWindow.tsx ~ line 131 ~ state.libp2p.handle ~ remotePeerId", remotePeerId)
-            //     console.log("🚀 ~ file: P2pProvider.tsx ~ line 142 ~ node.handle ~ remotePeerId", remotePeerId)
-            //     pipe(
-            //         stream,
-            //         (source: any) => {
-            //             return (async function* () {
-            //                 for await (const buf of source) yield array2str(buf.slice());
-            //             })();
-            //         },
-            //         async (source: any) => {
-            //             for await (const msg of source) {
-            //                 const msgObj = JSON.parse(msg);
-            //                 console.log("🚀 ~ file: ChatWindow.tsx ~ line 143 ~ forawait ~ msgObj", msgObj)
-            //                 // if (msgObj.type === "message") {
-            //                 //     messages.push(`<h1>${msgObj.data}</h1>`);
-            //                 // } else if (msgObj.type === "proposal") {
-            //                 //     const script = document.createElement('script');
-            //                 //     let code = msgObj.src.replaceAll(/<\/?[^<>]*>/g, "");
-            //                 //     var inlineScript = document.createTextNode(code);
-            //                 //     script.appendChild(inlineScript);
-
-            //                 //     document.body.appendChild(script);
-            //                 //     chatProposals.push(msgObj.data)
-            //                 // } else if (msgObj.type === "creditRequest") {
-            //                 //     const script = document.createElement('script');
-            //                 //     let code = msgObj.src.replaceAll(/<\/?[^<>]*>/g, "");
-            //                 //     var inlineScript = document.createTextNode(code);
-            //                 //     script.appendChild(inlineScript);
-
-            //                 //     document.body.appendChild(script);
-            //                 //     chatProposals.push(msgObj.data)
-            //                 //     messages.push(`<h1>${JSON.parse(msgObj.data)}</h1>`);
-            //                 // } else {
-            //                 //     messages.push(`<h1>${msg.toString()}</h1>`);
-            //                 // }
-
-            //             }
-            //         }
-            //     );
-            // });
+           
+            const listenerMa = multiaddr(`/ip4/127.0.0.1/tcp/10333/p2p/${peer}`)
+            
+            state.libp2p.dialProtocol(listenerMa, '/chat/1.0.0')
+            .then((stream: any) => {  
+                if (stream) {
+                    stdinToStream(stream, xrpAccount?.classicAddress, reqAmount, "credit" );
+                    console.log('Dialer dialed to listener on protocol: /chat/1.0.0')
+            
+                }
+            })
+          
         } catch (err) {
             console.log('err2 :>> ', err);
         }
     }
 
-    // const sendMessage = () => {
-    //     const dataForSend = {
-    //         "type": "message",
-    //         "data": this.chatMessage
-    //     }
-
-    //     this.chatQueue.push(JSON.stringify(dataForSend));
-    //     this.messages.push("< " + this.chatMessage);
-    //     this.chatMessage = "";
-    // }
+  
 
     const handleChangePeer = (event: any) => {
         console.log(event.target.value);
         setDistPeer("");
-        setDistPeer(event.target.value);
-        // refCurrentPeerId.current?.setRangeText("")
-        // refCurrentPeerId.current?.setRangeText(event.target.value)
+        setDistPeer(event.target.value); 
+    }
+
+    const handleChangeAmount = (event: any) => {
+        setReqAmount(0);
+        setReqAmount(+event.target.value)
     }
     const handleChangeChat = () => {
         console.log(refChat?.current?.value);
     }
+ 
+
     return (
         <>
-            <div id="status"></div>
-            <div id="output"></div>
             <div className="mb-3"  >
                 <Form.Label>Chat</Form.Label>
                 <Form.Control ref={refChat} placeholder="Search..." as="textarea" rows={3} onChange={() => handleChangeChat()} />
             </div>
+       
             <div>
+            {distPeer && <div className="mb-3"  >
+                    <Form.Label>Required amount CBDC</Form.Label>
+
+                    <Form.Control ref={refCbdc} onChange={handleChangeAmount} type="number" placeholder="10000" />
+                </div>}
                 <div className="mb-3"  >
                     <Form.Label>Connected peer Id</Form.Label>
-                    <input type="text" onChange={handleChangePeer} />
-                    <Form.Control ref={refCurrentPeerId} type="text" placeholder="peerId" />
+                    {/* <input type="text" onChange={handleChangePeer} /> */}
+                    <Form.Control ref={refCurrentPeerId} type="text"  onChange={handleChangePeer}  placeholder="peerId" />
                     {distPeer && <Button onClick={() => connectToPeer(distPeer)} variant="primary"  >
                         Connect to peer
                     </Button>}
                 </div>
-                <div>{JSON.stringify(chatQueue)}</div>
-                <div className="mb-3"  >
-                    <Form.Label>Message to Chat</Form.Label>
-
-                    <Form.Control ref={refMessage} type="text" placeholder="Message" />
-                </div>
-                <Button onClick={() => sendMessage()} variant="primary"  >
+                {/* <div>{JSON.stringify(chatQueue)}</div> */}
+                
+                {/* <Button onClick={() => sendMessage()} variant="primary"  >
                     Submit
-                </Button>
+                </Button> */}
 
             </div>
         </>

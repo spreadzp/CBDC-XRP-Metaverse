@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
+import { useP2p } from '../contexts/p2p';
 import Borrow from './Borrow';
 import ChatForm from './ChatForm';
 
@@ -14,7 +16,9 @@ import ChatForm from './ChatForm';
 //     { name: "Jhon", peerId: "ljkkj", role: "Borrower", rating: 4.25 }
 // ]
 function Chat({ rating }) {
-
+    const { state } = useP2p();
+    const bankAcc = localStorage.getItem("walletBank") || "";
+  const [bankAccount, setBankAccount] = useState(bankAcc.length > 0 ? JSON.parse(bankAcc): null);
     const getValidators = () => {
         const validators = Array(10).fill().map(item => ({ name: "Jhon", peerId: "ljkkj", role: "Borrower", rating: 4.25 }))
         return validators.map(item => {
@@ -70,16 +74,16 @@ function Chat({ rating }) {
     }
 
     const getLenders = () => {
-        const lenders = Array(10).fill().map(item => ({ name: "Jhon", peerId: "ljkkj", role: "Lender", rating: 4.25 }))
-
-        const res = lenders.map(item => {
-            item.name = genRandonString(6);
-            item.peerId = genRandonString(12);
-            item.role = "Lender";
-            item.rating = Math.random() * 10;
-            return item;
+        const res = [];
+        state?.connectedPeers?.forEach((item) => {
+            const lender = {
+                name: genRandonString(6),
+                peerId: item,
+                role: "Lender",
+                rating: (Math.random() * 10).toFixed(2)
+            };
+            res.push(lender);
         })
-        res.push({ name: "BANK", peerId: "bafzbeifewt2m3uedxrs6zprpve43ohodd47ntdhk2xrldet7fzinwev6ye", role: "Lender", rating: 100 });
         return res;
     }
 

@@ -5,10 +5,14 @@ import {Libp2p} from "libp2p";
 export type State = {
   libp2p: Libp2p;
   peerId: string;
+  connectedPeers: string[];
+  messages: any[];
 }
 const initialState: State = {
   libp2p: {} as Libp2p,
-  peerId: ""
+  peerId: "",
+  connectedPeers: [],
+  messages: [],
 };
 enum ActionKind {
   init = "INIT"

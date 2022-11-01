@@ -21,6 +21,7 @@ function SenderWidget({ sender, receiver }: SenderWidgetProps) {
     const cbAccount = localStorage.getItem("New") || "";
     const [cbdcAccount, setCbdcAccount] = useState(cbAccount.length > 0 ? JSON.parse(cbAccount): null);
     const [formData, setFormData] = useReducer(formReducer, {});
+    const [formDataReceiver, setFormDataReceiver] = useReducer(formReducer, {});
     const [submitting, setSubmitting] = useState(false);
     const [alertMessage, setAlert] = useState({ variant: "", message: "", link: "" });
 
@@ -35,7 +36,8 @@ function SenderWidget({ sender, receiver }: SenderWidgetProps) {
         event.preventDefault();
         if (xrpBorrowerAccount) {
             console.log('formData :>> ', formData);
-            sendTokensCBDC(receiver, formData.amount)
+            console.log('formDataReceiver :>> ', formDataReceiver);
+            sendTokensCBDC(formDataReceiver.receiver, formData.amount)
         }
         setSubmitting(true);
 
@@ -51,6 +53,12 @@ function SenderWidget({ sender, receiver }: SenderWidgetProps) {
         });
     }
 
+    const handleChangeReceiver = (event: any) => {
+        setFormDataReceiver({
+            name: event.target.name,
+            value: event.target.value,
+        });
+    }
     const sendTokensCBDC = async (rec: string, amount: number) => {
         await sendTokensFarther(xrpBorrowerAccount.seed, cbdcAccount.classicAddress, rec, amount, setAlert)
     }
@@ -73,7 +81,7 @@ function SenderWidget({ sender, receiver }: SenderWidgetProps) {
                     </Form.Group>
                     <Form.Group className="mb-3" controlId="formReceiver">
                         <Form.Label>Receiver address</Form.Label>
-                        <Form.Control type="text" placeholder="receiver" value={receiver} />
+                        <Form.Control type="text" placeholder="receiverAddress" name="receiver"  onChange={handleChangeReceiver}/>
                     </Form.Group>
                     <Form.Group className="mb-3" controlId="formReceiver">
                         <Form.Label>Amount in tokens to send</Form.Label>

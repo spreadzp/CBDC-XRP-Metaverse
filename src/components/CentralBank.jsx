@@ -100,12 +100,12 @@ const getAdminWidget = () => ( <div className='account-widget'>
             <HideShow component={getAdminWidget} buttonName={"Admin account"} nameSection={`Admin account info `} />
           
 
-            <div className='account-widget'>
+            {/* <div className='account-widget'>
                 {xrpBusinessAccount && <AccountWidget accountName={"Business account"} address={getAddress(xrpBusinessAccount)} />}
                 {isLoading && xrpBusinessAccount ? <Loader /> : <Button onClick={() => genXRPAccount("Business")} variant="primary"  >
                     Generate Business account
                 </Button>}
-            </div>
+            </div> */}
         </>
     );
 }
